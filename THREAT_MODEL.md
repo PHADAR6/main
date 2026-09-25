@@ -539,6 +539,7 @@ network-reachable host.
 | Payload size capped at 1 MB | `app.py` → `_enforce_json_size` |
 | `safe_filename` prevents path traversal via `fileName` | `app.py` → `safe_filename` |
 | Parameterized SQL prevents injection | `db.py` → `insert_proof_event` |
+| Applied migration checksums replayed against in-code definitions at startup (fail-closed) | `migration.py` → `run_migrations`, `verify_migration_checksums` |
 
 **Residual risk:** The endpoint has no authentication, HMAC, or bearer token.
 Any caller that can reach the Flask API can write arbitrary rows. The
@@ -606,6 +607,7 @@ must be reconciled against on-chain data for any security-sensitive decision.
 | `secure_filename` (Werkzeug) for `fileName` | T6 | `app.py` → `safe_filename` |
 | BN254 field bounds check on `credentialSecret` / `nullifierSecret` | T6 | `app.py` → `is_field_decimal` |
 | Parameterized SQL (psycopg) for all DB writes | T6, T10 | `db.py` → `insert_proof_event` |
+| Applied migration checksum verification at startup (fail-closed, id/digest-only reporting) | T10 | `migration.py` → `run_migrations`, `verify_migration_checksums` |
 | Sensitive key redaction in structured logs | T5 | `logging_utils.py` → `SENSITIVE_KEYS` |
 | Noir worker disabled in production (`NOIR_WORKER_ENABLED=false`) | T4, T5 | `config.py` → `noir_worker_enabled` |
 | Metrics endpoint token-gated | T6 | `app.py` → `metrics` |

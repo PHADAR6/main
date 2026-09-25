@@ -2,6 +2,8 @@
 
 ## 1.0.0 — Unreleased
 
+- Added fail-closed startup verification of applied migration checksums: `backend/migration.py` replays each recorded SHA-256 digest against its in-code definition and aborts startup with `MigrationChecksumError` on mismatch (id/digest-only reporting). `MIGRATION_CHECKSUM_ENFORCEMENT=warn` is the break-glass rollback. See `backend/README.md` and `THREAT_MODEL.md` (T10).
+
 - Extended structured fuzzing of proof and public-input decoding: proof-hex
   mutators (odd nibble, non-hex, empty, length edges), exact proof-bound tables,
   silence checks, and regression corpus entries `fz-011`–`fz-013` (#369).

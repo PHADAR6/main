@@ -249,10 +249,38 @@ def init_db() -> None:
 
     This replaces the earlier inline ``CREATE TABLE IF NOT EXISTS`` approach
     with an ordered, auditable migration ledger.  Safe to call repeatedly.
+
+    Before any pending migration is applied, the recorded checksum of every
+    already-applied migration is replayed against its in-code definition; a
+    mismatch raises ``migration.MigrationChecksumError`` so a drifted ledger
+    cannot silently start serving traffic.  Set
+    ``MIGRATION_CHECKSUM_ENFORCEMENT=warn`` only as a temporary break-glass
+    rollback while the ledger is reconciled.
     """
     from migration import run_migrations  # late import to avoid cycles
 
     run_migrations()
+
+
+def verify_migration_checksums() -> list[dict[str, object]]:
+    """Return applied migrations whose recorded checksum no longer matches.
+
+    Each dict has keys ``migration_id``, ``name``, ``issue``, ``expected`` and
+    ``recorded``.  An empty list means every applied migration is intact.
+    Read-only; intended for startup diagnostics and operational tooling.
+    """
+    from migration import verify_migration_checksums as _verify
+
+    return [
+        {
+            "migration_id": issue.migration_id,
+            "name": issue.name,
+            "issue": issue.issue,
+            "expected": issue.expected,
+            "recorded": issue.recorded,
+        }
+        for issue in _verify()
+    ]
 
 
 def detect_drift() -> list[dict[str, str]]:
